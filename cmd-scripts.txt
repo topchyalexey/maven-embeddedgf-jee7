@@ -1,0 +1,14 @@
+
+: schema creation action on its own
+mvn -DskipTests -Dhibernate.dialect=org.hibernate.dialect.HSQLDialect -P hbm-export compile hibernate3:hbm2ddl
+
+: database creation action on its own
+mvn -DskipTests -P sqlmaven sql:execute
+
+: export the data created
+mvn -DskipTests -P dbunit dbunit:export
+
+
+mvn bees:deploy -Dbees.appid=topchy/testapp -Dbees.apikey=XXXXXX -Dbees.secret=XXXXXXXXXXXXXXXXXXXXX
+
+mvn clean package embedded-glassfish:run
