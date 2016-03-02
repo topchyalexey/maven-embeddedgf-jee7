@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Simple CMS Application</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="">
+<meta name="author" content="">
+
+<!--link rel="stylesheet/less" href="less/bootstrap.less" type="text/css" /-->
+<!--link rel="stylesheet/less" href="less/responsive.less" type="text/css" /-->
+<!--script src="js/less-1.3.3.min.js"></script-->
+<!--append ‘#!watch’ to the browser URL, then refresh the page. -->
+
+<link href="css/bootstrap.min.css" rel="stylesheet">
+<link href="css/bootstrap-responsive.min.css" rel="stylesheet">
+<link href="css/style.css" rel="stylesheet">
+
+<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+  <![endif]-->
+
+<!-- Fav and touch icons -->
+<link rel="apple-touch-icon-precomposed" sizes="144x144"
+	href="img/apple-touch-icon-144-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="114x114"
+	href="img/apple-touch-icon-114-precomposed.png">
+<link rel="apple-touch-icon-precomposed" sizes="72x72"
+	href="img/apple-touch-icon-72-precomposed.png">
+<link rel="apple-touch-icon-precomposed"
+	href="img/apple-touch-icon-57-precomposed.png">
+<link rel="shortcut icon" href="img/favicon.png">
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/scripts.js"></script>
+<script type="text/javascript" src="js/jquery.json-2.4.min.js"></script>
+
+</head>
+
+<body>
+	<div class="container-fluid">
+		<div class="row-fluid">
+			<div class="span6">
+				<div class="navbar">
+					<div class="navbar-inner">
+						<div class="container-fluid">
+							<a data-target=".navbar-responsive-collapse"
+								data-toggle="collapse" class="btn btn-navbar"> <span
+								class="icon-bar"></span> <span class="icon-bar"></span> <span
+								class="icon-bar"></span>
+							</a> <a href="#" class="brand">Title</a>
+							<div class="nav-collapse collapse navbar-responsive-collapse">
+								<ul class="nav">
+									<li class="active"><a href="#">Home</a></li>
+									<li><a href="#">Link</a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<h3>Simple CMS Application</h3>
+
+				<button class="btn" type="button">Button</button>
+
+				<form class="form-search form-inline">
+					<input type="text" class="input-medium search-query">
+					<button type="submit" class="btn">Search</button>
+				</form>
+
+				<form>
+					<!--fieldset></fieldset-->
+					<span class="help-block">fill form and press</span> <label>Name</label>
+					<input id="new-name" type="text"> <label>Chief</label> 
+					<input id="new-chief" type="text"> <label>Room</label> 
+					<input id="new-room" type="text"> <label>Department</label> 
+						<select	id="new-gender">
+						<option value="Male">Male</option>
+						<option value="Female">Female</option>
+					</select>
+					<input id="add-new" type="button" class="btn" value="Add">
+				</form>
+
+				<table class="table">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Chief</th>
+							<th>Name</th>
+							<th>Room</th>
+						</tr>
+					</thead>
+					<tbody>
+						<!--tr class="success,error,warning,info" -->
+						<tr class="prototype">
+							<td class="rowId"></td>
+							<td class="rowChief"></td>
+							<td class="rowName"></td>
+							<td class="rowRoom"></td>
+							<td class="rowLink"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	
+	<script type="text/javascript">
+	var pathname = window.location.pathname.replace("index\.html", '');
+	var restBaseUrl = 'rest/';
+	var tableSelector = 'table.table';
+
+	function clearTable() {
+		$(tableSelector + " tr.success").remove();
+	}
+
+	function updateTable(items) {
+		$.each(items, function() {
+			var elements = $(this);
+			$.each(elements, function() {
+				addRow($(this));
+			});
+		});
+	}
+
+	function populateDepartments(items) {
+		$.each(items, function() {
+			var elements = $(this);
+			$.each(elements, function() {
+				addRow($(this));
+			});
+		});
+	}
+	
+	function setEditableVal(row, dataClass, val) {
+		var td  = row.find('.' + dataClass);
+		td.html(val);
+		td.attr('class', 'edit ' + dataClass);
+	}
+	
+	function addRow(rowData) {
+		var row = $(tableSelector).find('.prototype').clone();
+		row.attr("class", "success")
+		setEditableVal(row, 'rowId',rowData[0]["id"]);
+		setEditableVal(row, 'rowName',rowData[0]["name"]);
+		setEditableVal(row, 'rowChief',rowData[0]["chief"]);
+		setEditableVal(row, 'rowRoom',rowData[0]["room"]);
+
+		row.find('.rowLink').html("<a class='icon-remove delete'/>");
+		//row.find('.rowLink a.delete').html("Del");
+		$(tableSelector).find('tbody').append(row);
+	}
+
+	$('#add-new').click(function() {
+		var name = $('#new-name').val();
+		var chief = $('#new-chief').val();
+		var room = $('#new-room').val();
+		var formData = {
+			name : name,
+			chief : chief,
+			room : room
+		};
+		$.ajax({
+			url : restBaseUrl + 'deps/',
+			type : "PUT",
+			data : formData,
+			dataType : 'json',
+			success : function(data) {
+				//alert("added to db:" + data);
+				refreshData();
+			},
+			error : function(errorData) {
+				alert(errorData);
+			}
+		});
+	});
+
+	$('#clear-table').click(function() {
+		clearTable();
+	});
+	$('#update-table').click(function() {
+		refreshData();
+	});
+	
+	/*
+	$(tableSelector).on('click', 'td.edit',function(){  
+		$(this).addClass('ajax');  
+		$(this).html('<input id="editbox" size="'+  
+		$(this).text().length+'" type="text" value="' + $(this).text()+'">');                                         
+		$('#editbox').focus();  
+	}); */
+	
+	$(tableSelector).on( 'click', 'td.edit', function(){  
+        
+		 $('.ajax').html($('.ajax input').val());  
+		 $('.ajax').removeClass('ajax');  
+		  
+		 $(this).addClass('ajax');  
+		 $(this).html('<input id="editbox" size="'+ $(this).text().length+'" type="text" value="' + $(this).text() + '">');  
+		 
+		 $('#editbox').focus();
+	} ); 
+	
+	
+	$(tableSelector).on( 'keydown', 'td.edit', function(event){  
+	    if(event.which == 13)  
+	   {   
+	      $.ajax({    type: "POST",  
+	      url:"config.php",  
+	      data: //To be discussed in next step,  
+	      success: function(data){  
+	       $('.ajax').html($('.ajax input').val());  
+	        $('.ajax').removeClass('ajax');  
+	       }});  
+	    }  
+	                                    
+	}); 
+	
+	/*
+	$('td.edit').keydown(function(event){  
+	     arr = $(this).attr('class').split( " " );  
+	     if(event.which == 13)  
+	     {   
+	        $.ajax({    type: "POST",  
+	                    url:"config.php",  
+	                data: "value="+$('.ajax input').val()+  
+	                                        "&rownum="+arr[2]+"&field="+arr[1],  
+	                success: function(data){  
+	                     $('.ajax').html($('.ajax input').val());  
+	                         $('.ajax').removeClass('ajax');  
+	            }});  
+	        }  
+	                                    
+	});
+	
+	$(tableSelector).on('click', '.delete', function() {
+		var tr = $(this).parents("td").parents('tr');
+		var id = tr.find('.rowId').html();
+		$.ajax({
+			url : restBaseUrl + 'deps/' + id,
+			type : "DELETE",
+			dataType : 'json',
+			success : function() {
+				refreshData();
+			}
+		});
+	});
+ */
+	function refreshData() {
+		$.ajax({
+			url : restBaseUrl + 'deps/all',
+			type : "GET",
+			dataType : 'json',
+			success : function(allData) {
+				clearTable();
+				if (allData != null) {
+					updateTable(allData);
+					//populateDepartments(allData);
+				}
+			}
+		});
+	}
+
+	$().ready(function() {
+		refreshData();
+	});
+</script>
+</body>
+</html>
